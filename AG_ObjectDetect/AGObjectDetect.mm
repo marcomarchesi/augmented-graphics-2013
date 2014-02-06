@@ -140,11 +140,18 @@ vector<vector<cv::Point> > AGObjectDetect::getSampleFromImage(Mat image){
 vector<vector<cv::Point> > AGObjectDetect::getContoursFromImage(Mat image, cv::Point center,int distance){
     
     
+    
     // resize image
-    double scaleFactor = image.cols/640;
-    resize(image, image, cv::Size(round(image.cols/scaleFactor),round(image.rows/scaleFactor)));
+    //float scaleFactor = float(image.rows)/480;
+    //NSLog(@"scale factor %f",scaleFactor);
+    
+    
+    // TODO fix FORCE RESIZE
+    //resize(image, image, cv::Size(round(image.rows/scaleFactor),round(image.cols/scaleFactor)));
+    resize(image,image, cv::Size(640,480));
     image = image(Range(1,480), Range(1,640));
     
+    //NSLog(@"Image is %i %i",image.cols,image.rows);
     
     // setup image
     

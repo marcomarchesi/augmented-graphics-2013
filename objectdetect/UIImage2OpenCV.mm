@@ -166,8 +166,8 @@
     
     image.copyTo(dst);
     //TODO
-    //vector<vector<cv::Point>> contours = AGObjectDetect::getContoursFromImage(image);
-    //cv::drawContours( dst, contours, 0, cvScalar(255,255,255), CV_FILLED,8);
+    vector<vector<cv::Point>> contours = AGObjectDetect::getContoursFromImage(image,cv::Point(320,240),75);
+    cv::drawContours( dst, contours, 0, cvScalar(255,255,255), CV_FILLED,8);
     
     cv::Mat dst_inv;
     cv::subtract(cv::Scalar::all(255),dst,dst_inv);
