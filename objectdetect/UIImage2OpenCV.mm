@@ -9,8 +9,8 @@
 {
   CGImageRef imageRef = self.CGImage;
   
-  const int srcWidth        = CGImageGetWidth(imageRef);
-  const int srcHeight       = CGImageGetHeight(imageRef);
+  const int srcWidth        = (int)CGImageGetWidth(imageRef);
+  const int srcHeight       = (int)CGImageGetHeight(imageRef);
   //const int stride          = CGImageGetBytesPerRow(imageRef);
   //const int bitPerPixel     = CGImageGetBitsPerPixel(imageRef);
   //const int bitPerComponent = CGImageGetBitsPerComponent(imageRef);
@@ -39,7 +39,7 @@
   CFRelease(rawData);
   
   cv::Mat t;
-  cv::cvtColor(rgbaContainer, t, CV_RGBA2BGRA);
+  cv::cvtColor(rgbaContainer, t, cv::COLOR_RGBA2BGRA);
 
   //cv::Vec4b a = rgbaContainer.at<cv::Vec4b>(0,0);
   //cv::Vec4b b = t.at<cv::Vec4b>(0,0);
@@ -78,15 +78,15 @@
   
   if (image.channels() == 3)
   {
-    cv::cvtColor(image, rgbaView, CV_BGR2RGBA);
+    cv::cvtColor(image, rgbaView,  cv::COLOR_BGR2RGBA);
   }
   else if (image.channels() == 4)
   {
-    cv::cvtColor(image, rgbaView, CV_BGRA2RGBA);
+    cv::cvtColor(image, rgbaView, cv::COLOR_BGRA2RGBA);
   }
   else if (image.channels() == 1)
   {
-    cv::cvtColor(image, rgbaView, CV_GRAY2RGBA);
+    cv::cvtColor(image, rgbaView, cv::COLOR_GRAY2RGBA);
   }
   
   NSData *data = [NSData dataWithBytes:rgbaView.data length:rgbaView.elemSize() * rgbaView.total()];
@@ -122,7 +122,7 @@
 
 + (UIImage *)imageWithCVMat:(const cv::Mat&)cvMat
 {
-    cv::cvtColor(cvMat, cvMat, CV_BGRA2RGBA);
+    cv::cvtColor(cvMat, cvMat, cv::COLOR_BGRA2RGBA);
     NSData *data = [NSData dataWithBytes:cvMat.data length:cvMat.elemSize() * cvMat.total()];
     
     CGColorSpaceRef colorSpace;
@@ -162,19 +162,21 @@
 
 +(UIImage*) imageDetectedFrom:(cv::Mat)image{
     
+    UIImage *inputImage = [UIImage imageWithMat:image andDeviceOrientation:UIDeviceOrientationLandscapeLeft];
+    
     cv::Mat dst = cv::Mat::zeros(image.size(), image.type());
     
     image.copyTo(dst);
     //TODO
-    vector<vector<cv::Point>> contours = AGObjectDetect::getContoursFromImage(image,cv::Point(320,240),75);
-    cv::drawContours( dst, contours, 0, cvScalar(255,255,255), CV_FILLED,8);
+//    vector<vector<cv::Point>> contours = AGObjectDetect::getContoursFromImage(image,cv::Point(320,240),120);
+//    cv::drawContours( dst, contours, 0, cvScalar(255,255,255), CV_FILLED,8);
     
     cv::Mat dst_inv;
     cv::subtract(cv::Scalar::all(255),dst,dst_inv);
     
-    UIImage *inputImage = [self imageWithCVMat:image];
     
-    UIImage *mask = [self imageWithCVMat:dst_inv];
+    
+    UIImage *mask = [UIImage imageWithMat:dst_inv andDeviceOrientation:UIDeviceOrientationLandscapeLeft];
     
     CGImageRef imageReference = inputImage.CGImage;
     CGImageRef maskReference = mask.CGImage;

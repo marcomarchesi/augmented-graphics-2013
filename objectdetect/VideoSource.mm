@@ -94,7 +94,7 @@
 - (void) toggleCamera
 {
     currentCameraIndex++;
-    int camerasCount = [captureDevices count];
+    int camerasCount = (int)[captureDevices count];
     currentCameraIndex = currentCameraIndex % camerasCount;
     
     AVCaptureDevice *videoDevice = [captureDevices objectAtIndex:currentCameraIndex];

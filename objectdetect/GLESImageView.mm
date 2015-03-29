@@ -56,17 +56,17 @@
                                       kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
                                       nil];
       
-      self.fpsCalculator = [[FPSCalculator alloc] init];
-      
-      self.fpsLabel = [[UILabel alloc] initWithFrame:CGRectMake(5, 25, 100, 100)];
-      self.fpsLabel.text = @"XXX FPS";
-      self.fpsLabel.textColor = [UIColor greenColor];
-      self.fpsLabel.backgroundColor = [UIColor clearColor];
-      self.fpsLabel.numberOfLines = 1;
-      
-      [self.fpsLabel sizeToFit];
-        
-      [self addSubview:self.fpsLabel];
+//      self.fpsCalculator = [[FPSCalculator alloc] init];
+//      
+//      self.fpsLabel = [[UILabel alloc] initWithFrame:CGRectMake(5, 25, 100, 100)];
+//      self.fpsLabel.text = @"XXX FPS";
+//      self.fpsLabel.textColor = [UIColor greenColor];
+//      self.fpsLabel.backgroundColor = [UIColor clearColor];
+//      self.fpsLabel.numberOfLines = 1;
+//      
+//      [self.fpsLabel sizeToFit];
+//        
+//      [self addSubview:self.fpsLabel];
         
       
             

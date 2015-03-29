@@ -14,6 +14,7 @@
 
 #import "EmObjectDetect.h"
 
+
 float AGObjectDetect::approxValue = 0;
 static vector<vector<vector<cv::Point> > > buffer;
 static vector<vector<cv::Point> > buffer2;
@@ -32,7 +33,7 @@ bool AGObjectDetect::processFrame(const cv::Mat& inputFrame, cv::Mat& outputFram
             break;
         case MODE_SHAPE:
         {
-            cv::vector<cv::vector<cv::Point> > newSample = getContoursFromImage(inputFrame,cv::Point(320,240),75);
+            vector<vector<cv::Point> > newSample = getContoursFromImage(inputFrame,cv::Point(320,240),75);
             outputFrame = inputFrame;
             //outputFrame = cv::Mat::zeros(480, 640, inputFrame.type());
             for(int i=0;i<newSample.size();i++){
@@ -83,7 +84,7 @@ vector<vector<cv::Point> > AGObjectDetect::getSampleFromImage(Mat image){
     erode(image, image, element);
     
     // frame filtering
-    cvtColor(image, image, CV_BGRA2GRAY);
+    cvtColor(image, image, COLOR_BGRA2GRAY);
     GaussianBlur(image, image, cv::Size(21,21), 1.5, 1.5);
     Canny(image, image, 20,30, 3, true);
     
@@ -96,9 +97,9 @@ vector<vector<cv::Point> > AGObjectDetect::getSampleFromImage(Mat image){
     
     
     //get contours
-    cv::vector<cv::vector<cv::Point> > contours;
-    cv::vector<cv::Vec4i> hierarchy;
-    cv::findContours( image, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+    vector<vector<cv::Point> > contours;
+    vector<cv::Vec4i> hierarchy;
+    cv::findContours( image, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
     
     //    // find the contour of the largest area
     //    double area_max=0;
@@ -110,7 +111,7 @@ vector<vector<cv::Point> > AGObjectDetect::getSampleFromImage(Mat image){
     //            area_max_idx=i;
     //        }
     
-    cv::vector<cv::vector<cv::Point> > rootContours;
+    vector<vector<cv::Point> > rootContours;
     cv::Mat newImage = cv::Mat::zeros(480, 640, CV_8UC3);
     
     if(contours.size()>0){
@@ -163,7 +164,7 @@ vector<vector<cv::Point> > AGObjectDetect::getContoursFromImage(Mat image, cv::P
     erode(image, image, element);
     
     // frame filtering
-    cvtColor(image, image, CV_BGRA2GRAY);
+    cvtColor(image, image, COLOR_BGRA2GRAY);
     GaussianBlur(image, image, cv::Size(21,21), 1.5, 1.5);
     Canny(image, image, 20,30, 3, true);
 
@@ -176,9 +177,9 @@ vector<vector<cv::Point> > AGObjectDetect::getContoursFromImage(Mat image, cv::P
     
     
     //get contours
-    cv::vector<cv::vector<cv::Point> > contours;
-    cv::vector<cv::Vec4i> hierarchy;
-    cv::findContours( image, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+    vector<vector<cv::Point> > contours;
+    vector<cv::Vec4i> hierarchy;
+    cv::findContours( image, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
     
 //    // find the contour of the largest area
 //    double area_max=0;
@@ -190,7 +191,7 @@ vector<vector<cv::Point> > AGObjectDetect::getContoursFromImage(Mat image, cv::P
 //            area_max_idx=i;
 //        }
     
-    cv::vector<cv::vector<cv::Point> > rootContours;
+    vector<vector<cv::Point> > rootContours;
     cv::Mat newImage = cv::Mat::zeros(480, 640, CV_8UC3);
     
     if(contours.size()>0){
@@ -232,7 +233,7 @@ Mat AGObjectDetect::matFromContours(vector<vector<cv::Point> > contours){
         drawContours(image, contours, i, Scalar(0,255,255), 1, 8);
     }
     
-    cv::cvtColor(image, image, CV_BGR2BGRA);
+    cv::cvtColor(image, image, COLOR_BGR2BGRA);
     return image;
     
 }
@@ -275,8 +276,8 @@ double AGObjectDetect::compare(vector<vector<cv::Point> > contourSample,vector<v
     }
     double matchRate = 100;
     
-    if((contour1.size()>0)&&(contour2.size()>0))
-       matchRate = matchShapes(contour1,contour2, CV_CONTOURS_MATCH_I1, 0);
+//    if((contour1.size()>0)&&(contour2.size()>0))
+//        matchRate = matchShapes(contour1,contour2, cv::CV_CONTOURS_MATCH_I1, 0);
     return matchRate;
 }
 
@@ -325,13 +326,13 @@ objectDef AGObjectDetect::objectDetection(cv::Mat image, vector<vector<cv::Point
         
         //draw all the buffered and current contours
         for(int j=0;j<buffer.size();j++){
-            int currentBufferSize = buffer[j].size();
+            int currentBufferSize = (int)buffer[j].size();
             for(int i=0;i<currentBufferSize;i++){
                 
                 vector<int> hull;
                 vector<cv::Point> hullPoints;
                 
-                convexHull(Mat(buffer[j][i]), hull, CV_CLOCKWISE);
+                convexHull(Mat(buffer[j][i]), hull);
                 int hullcount = (int)hull.size();
                 cv::Point pt0 = buffer[j][i][hull[hullcount-1]];
                 hullPoints.push_back(pt0);
@@ -347,13 +348,13 @@ objectDef AGObjectDetect::objectDetection(cv::Mat image, vector<vector<cv::Point
                 //draw Hull curves
                 //cv::drawContours( dst, hullContour, i, cvScalar(255,255,255), CV_FILLED,8);
                 //draw contour curves
-                cv::drawContours( dst, buffer[j], i, cvScalar(255,0,0), 1,8);
+                cv::drawContours( dst, buffer[j], i, Scalar(255,0,0), 1,8);
                 
             }
         }
         
         vector<int> hull;
-        convexHull(Mat(objectPoints), hull, CV_CLOCKWISE);
+        convexHull(Mat(objectPoints), hull);
         vector<cv::Point> hullPoints;
         int hullcount = (int)hull.size();
         if(hullcount>0){
@@ -368,17 +369,17 @@ objectDef AGObjectDetect::objectDetection(cv::Mat image, vector<vector<cv::Point
             
             if(result<threshold){
                 if(matchCounter>1){
-                    fillConvexPoly(dst, hullPoints, cvScalar(0,255,0));
+                    fillConvexPoly(dst, hullPoints, Scalar(0,255,0));
                     matchCounter++;
                     match = true;
                 }else {
-                    fillConvexPoly(dst, hullPoints, cvScalar(0,0,255));
+                    fillConvexPoly(dst, hullPoints, Scalar(0,0,255));
                     matchCounter++;
                     match = false;
                 }
                 
             }else{
-                fillConvexPoly(dst, hullPoints, cvScalar(0,0,255));
+                fillConvexPoly(dst, hullPoints, Scalar(0,0,255));
                 matchCounter = 0;
                 match = false;
                 

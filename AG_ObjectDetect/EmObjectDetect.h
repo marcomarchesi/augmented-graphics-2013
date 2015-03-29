@@ -18,7 +18,7 @@ using namespace std;
 
 typedef struct contourStruct{
     std::vector<std::vector<cv::Point> > contours;
-    cv::vector<cv::Vec4i> hierarchy;
+    vector<cv::Vec4i> hierarchy;
     
 } contourStruct;
 

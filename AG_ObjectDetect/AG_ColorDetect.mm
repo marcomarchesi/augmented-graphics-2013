@@ -57,7 +57,7 @@ std::vector<int> getDominantHSVColor(cv::Mat image){
     
     cv::Scalar color;
     cv::Mat hsv;
-    cvtColor(image, hsv, CV_BGR2HSV);
+    cvtColor(image, hsv, cv::COLOR_BGR2HSV);
     
     int hbins = 36, sbins = 10,vbins = 10;
     int histSize[] = {hbins, sbins,vbins};
@@ -115,7 +115,7 @@ int getDominantColor(cv::Mat image){
     
     cv::Scalar color;
     cv::Mat hsv;
-    cvtColor(image, hsv, CV_BGR2HSV);
+    cvtColor(image, hsv, cv::COLOR_BGR2HSV);
     
     int hbins = 36, sbins = 10,vbins = 10;
     int histSize[] = {hbins, sbins,vbins};
