@@ -11,7 +11,6 @@
 #import "GLESImageView.h"
 #import "VideoSource.h"
 
-#import "EmObjectDetect.h"
 
 
 @interface VideoViewController : UIViewController<VideoSourceDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate,UIPopoverControllerDelegate>{
@@ -22,8 +21,7 @@
     
     int matchCounter;
     
-    EmObjectDetect emObject;
-    vector<vector<cv::Point>> contour_unique_load;
+    std::vector<std::vector<cv::Point>> contour_unique_load;
     cv::Mat sampleImage;
     cv::Mat contourImage;
     cv::Mat matchedImage;

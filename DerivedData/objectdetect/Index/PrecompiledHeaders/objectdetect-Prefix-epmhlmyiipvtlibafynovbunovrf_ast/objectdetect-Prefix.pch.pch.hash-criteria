@@ -1,0 +1,32 @@
+-x
+objective-c
+-arch
+x86_64
+-fretain-comments-from-system-headers
+-std=gnu99
+-fobjc-arc
+-gmodules
+-fpascal-strings
+-O0
+-DDEBUG=1
+-isysroot
+/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator9.2.sdk
+-fasm-blocks
+-mios-simulator-version-min=6.1
+-g
+-fobjc-abi-version=2
+-fobjc-legacy-dispatch
+-iquote
+-iquote
+-I/Users/marcomarchesi/Desktop/AugmentedGraphicsV1/Augmented Graphics/objectdetect/build/Debug-iphonesimulator/include
+-F/Users/marcomarchesi/Desktop/AugmentedGraphicsV1/Augmented Graphics/objectdetect/build/Debug-iphonesimulator
+-F/Users/marcomarchesi/Desktop/AugmentedGraphicsV1/Augmented Graphics/objectdetect/../../graphic novel app
+-F/Users/marcomarchesi/Desktop/AugmentedGraphicsV1/Augmented Graphics/objectdetect
+-ferror-limit=10
+-working-directory=/Users/marcomarchesi/Desktop/AugmentedGraphicsV1/Augmented Graphics/objectdetect
+-Xclang
+-detailed-preprocessing-record
+x86_64-apple-darwin15.3.0
+"4.2.1 Compatible Apple LLVM 7.0.2 (clang-700.1.81)"
+SDK_PRODUCT_BUILD_VERSION=13C75
+13C75

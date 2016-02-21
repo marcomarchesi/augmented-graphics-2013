@@ -12,13 +12,12 @@
 #include "UIImage2OpenCV.h"
 #include "AGConstants.h"
 
-#import "EmObjectDetect.h"
 
 
 float AGObjectDetect::approxValue = 0;
-static vector<vector<vector<cv::Point> > > buffer;
-static vector<vector<cv::Point> > buffer2;
-static vector<vector<cv::Point> > buffer3;
+static std::vector<std::vector<std::vector<cv::Point> > > buffer;
+static std::vector<std::vector<cv::Point> > buffer2;
+static std::vector<std::vector<cv::Point> > buffer3;
 
 static int matchCounter = 0;
 
@@ -33,15 +32,15 @@ bool AGObjectDetect::processFrame(const cv::Mat& inputFrame, cv::Mat& outputFram
             break;
         case MODE_SHAPE:
         {
-            vector<vector<cv::Point> > newSample = getContoursFromImage(inputFrame,cv::Point(320,240),75);
+            std::vector<std::vector<cv::Point> > newSample = getContoursFromImage(inputFrame,cv::Point(320,240),75);
             outputFrame = inputFrame;
             //outputFrame = cv::Mat::zeros(480, 640, inputFrame.type());
             for(int i=0;i<newSample.size();i++){
-                drawContours(outputFrame, newSample, i, Scalar(255,0,0));
-                Moments mu;
+                drawContours(outputFrame, newSample, i, cv::Scalar(255,0,0));
+                cv::Moments mu;
                 mu = moments(newSample[i]);
-                Point2f centerOfMass = Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
-                circle(outputFrame, centerOfMass, 3, Scalar(0,255,0));
+                cv::Point2f centerOfMass = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
+                circle(outputFrame, centerOfMass, 3, cv::Scalar(0,255,0));
    
             }
             //outputFrame = AGObjectDetect::objectDetection(inputFrame);
@@ -65,182 +64,195 @@ bool AGObjectDetect::processFrame(const cv::Mat& inputFrame, cv::Mat& outputFram
 
 // NEW FUNCTION 22/10/13
 
-vector<vector<cv::Point> > AGObjectDetect::getSampleFromImage(Mat image){
+std::vector<std::vector<cv::Point> > AGObjectDetect::getSampleFromImage(cv::Mat image){
     
-    
-    // resize image
-    double scaleFactor = image.cols/640;
-    resize(image, image, cv::Size(round(image.cols/scaleFactor),round(image.rows/scaleFactor)));
-    image = image(Range(1,480), Range(1,640));
-    
-    
-    // setup image
-    
-    
-    
-    // Apply the erosion operation
-    Mat erosion;
-    Mat element = getStructuringElement( MORPH_ELLIPSE, cv::Size(1,1), cv::Point(0, 0) );
-    erode(image, image, element);
-    
-    // frame filtering
-    cvtColor(image, image, COLOR_BGRA2GRAY);
-    GaussianBlur(image, image, cv::Size(21,21), 1.5, 1.5);
-    Canny(image, image, 20,30, 3, true);
-    
-    
-    // Apply the dilation operation
-    Mat dilation;
-    element = getStructuringElement( MORPH_ELLIPSE , cv::Size(1, 1), cv::Point(0, 0) );
-    dilate(image, image, element);
-    
-    
-    
-    //get contours
-    vector<vector<cv::Point> > contours;
-    vector<cv::Vec4i> hierarchy;
-    cv::findContours( image, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
-    
-    //    // find the contour of the largest area
-    //    double area_max=0;
-    //    int area_max_idx=0;
-    //    for(unsigned i=0; i<contours.size(); i++)
-    //        if( contourArea(Mat(contours[i])) > area_max )
-    //        {
-    //            area_max=contourArea(Mat(contours[i]));
-    //            area_max_idx=i;
-    //        }
-    
-    vector<vector<cv::Point> > rootContours;
-    cv::Mat newImage = cv::Mat::zeros(480, 640, CV_8UC3);
-    
-    if(contours.size()>0){
-        //        Moments mu;
-        //        mu = moments(contours[area_max_idx]);
-        //Point2f centerOfMass0 = Point2f(image.cols/2, image.rows/2);
-        //Point2f centerOfMass0 = Point2f(mu.m10/mu.m00, mu.m01/mu.m00); //centerOfMass of biggest contour
-        //vector<int> color = getDominantHSVColor(matFromContours(contours));
-        //NSLog(@"hue is %i",color[0]);
+    if(!image.empty()){
+        // resize image
+        //    double scaleFactor = image.cols/640;
+        //    resize(image, image, cv::Size(round(image.cols/scaleFactor),round(image.rows/scaleFactor)));
+        //    image = image(Range(1,480), Range(1,640));
+        
+        resize(image,image, cv::Size(640,480));
+        image = image(cv::Range(1,480), cv::Range(1,640));
         
         
-        for (int i = 0; i<hierarchy.size(); i++) {
-            if(hierarchy[i][3] == -1)
-            {
-               
+        // setup image
+        
+        
+        
+        // Apply the erosion operation
+        cv::Mat erosion;
+        cv::Mat element = getStructuringElement( cv::MORPH_ELLIPSE, cv::Size(1,1), cv::Point(0, 0) );
+        erode(image, image, element);
+        
+        // frame filtering
+        cvtColor(image, image, cv::COLOR_BGRA2GRAY);
+        GaussianBlur(image, image, cv::Size(21,21), 1.5, 1.5);
+        Canny(image, image, 20,30, 3, true);
+        
+        
+        // Apply the dilation operation
+        cv::Mat dilation;
+        element = getStructuringElement( cv::MORPH_ELLIPSE , cv::Size(1, 1), cv::Point(0, 0) );
+        dilate(image, image, element);
+        
+        
+        
+        //get contours
+        std::vector<std::vector<cv::Point> > contours;
+        std::vector<cv::Vec4i> hierarchy;
+        cv::findContours( image, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+        
+        //    // find the contour of the largest area
+        //    double area_max=0;
+        //    int area_max_idx=0;
+        //    for(unsigned i=0; i<contours.size(); i++)
+        //        if( contourArea(Mat(contours[i])) > area_max )
+        //        {
+        //            area_max=contourArea(Mat(contours[i]));
+        //            area_max_idx=i;
+        //        }
+        
+        std::vector<std::vector<cv::Point> > rootContours;
+        cv::Mat newImage = cv::Mat::zeros(480, 640, CV_8UC3);
+        
+        if(contours.size()>0){
+            //        Moments mu;
+            //        mu = moments(contours[area_max_idx]);
+            //Point2f centerOfMass0 = Point2f(image.cols/2, image.rows/2);
+            //Point2f centerOfMass0 = Point2f(mu.m10/mu.m00, mu.m01/mu.m00); //centerOfMass of biggest contour
+            //vector<int> color = getDominantHSVColor(matFromContours(contours));
+            //NSLog(@"hue is %i",color[0]);
+            
+            
+            for (int i = 0; i<hierarchy.size(); i++) {
+                if(hierarchy[i][3] == -1)
+                {
+                    
                     rootContours.push_back(contours[i]);
+                }
             }
         }
+        
+        //NSLog(@"contour size is %lu",rootContours.size());
+        return rootContours;
+        //return contours;
+
+    }else{
+        std::vector<std::vector<cv::Point> > rootContours;
+        return rootContours;
     }
+}
+
+std::vector<std::vector<cv::Point> > AGObjectDetect::getContoursFromImage(cv::Mat image, cv::Point center,int distance){
     
-    //NSLog(@"contour size is %lu",rootContours.size());
-    return rootContours;
-    //return contours;
+    if(!image.empty()){
+        // resize image
+        //float scaleFactor = float(image.rows)/480;
+        //NSLog(@"scale factor %f",scaleFactor);
+        
+        
+        // TODO fix FORCE RESIZE
+        //resize(image, image, cv::Size(round(image.rows/scaleFactor),round(image.cols/scaleFactor)));
+        resize(image,image, cv::Size(640,480));
+        image = image(cv::Range(1,480), cv::Range(1,640));
+        
+        //NSLog(@"Image is %i %i",image.cols,image.rows);
+        
+        // setup image
+        
+        
+        
+        // Apply the erosion operation
+        cv::Mat erosion;
+        cv::Mat element = getStructuringElement( cv::MORPH_ELLIPSE, cv::Size(1,1), cv::Point(0, 0) );
+        erode(image, image, element);
+        
+        // frame filtering
+        cvtColor(image, image, cv::COLOR_BGRA2GRAY);
+        GaussianBlur(image, image, cv::Size(21,21), 1.5, 1.5);
+        Canny(image, image, 20,30, 3, true);
+        
+        
+        // Apply the dilation operation
+        cv::Mat dilation;
+        element = getStructuringElement( cv::MORPH_ELLIPSE , cv::Size(1, 1), cv::Point(0, 0) );
+        dilate(image, image, element);
+        
+        
+        
+        //get contours
+        std::vector<std::vector<cv::Point> > contours;
+        std::vector<cv::Vec4i> hierarchy;
+        cv::findContours( image, contours, hierarchy, cv::RETR_TREE,cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+        
+        //    // find the contour of the largest area
+        //    double area_max=0;
+        //    int area_max_idx=0;
+        //    for(unsigned i=0; i<contours.size(); i++)
+        //        if( contourArea(Mat(contours[i])) > area_max )
+        //        {
+        //            area_max=contourArea(Mat(contours[i]));
+        //            area_max_idx=i;
+        //        }
+        
+        std::vector<std::vector<cv::Point> > rootContours;
+        cv::Mat newImage = cv::Mat::zeros(480, 640, CV_8UC3);
+        
+        if(contours.size()>0){
+            //        Moments mu;
+            //        mu = moments(contours[area_max_idx]);
+            //Point2f centerOfMass0 = Point2f(image.cols/2, image.rows/2);
+            //Point2f centerOfMass0 = Point2f(mu.m10/mu.m00, mu.m01/mu.m00); //centerOfMass of biggest contour
+            //vector<int> color = getDominantHSVColor(matFromContours(contours));
+            //NSLog(@"hue is %i",color[0]);
+            
+            
+            for (int i = 0; i<hierarchy.size(); i++) {
+                if(hierarchy[i][3] == -1)
+                {
+                    cv::Point2f centerOfMass0 = cv::Point2f(center.x, center.y);
+                    cv::Moments mu;
+                    mu = moments(contours[i]);
+                    //double area = contourArea(contours[i]);
+                    cv::Point2f centerOfMass = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
+                    double dist = AGObjectDetect::euclideanDist(centerOfMass, centerOfMass0);
+                    if( dist< distance)
+                        //if(( pointPolygonTest(contours[i], centerOfMass, true)< 200)&&pointPolygonTest(contours[i], centerOfMass, true)>0)
+                        rootContours.push_back(contours[i]);
+                }
+            }
+        }
+        
+        //NSLog(@"contour size is %lu",rootContours.size());
+        return rootContours;
+        //return contours;
+
+    }
+    else{
+        std::vector<std::vector<cv::Point>> rootContours;
+        return rootContours;
+    }
+        
     
 }
 
-vector<vector<cv::Point> > AGObjectDetect::getContoursFromImage(Mat image, cv::Point center,int distance){
+cv::Mat AGObjectDetect::matFromContours(std::vector<std::vector<cv::Point> > contours){
     
-    
-    
-    // resize image
-    //float scaleFactor = float(image.rows)/480;
-    //NSLog(@"scale factor %f",scaleFactor);
-    
-    
-    // TODO fix FORCE RESIZE
-    //resize(image, image, cv::Size(round(image.rows/scaleFactor),round(image.cols/scaleFactor)));
-    resize(image,image, cv::Size(640,480));
-    image = image(Range(1,480), Range(1,640));
-    
-    //NSLog(@"Image is %i %i",image.cols,image.rows);
-    
-    // setup image
-    
-    
-    
-    // Apply the erosion operation
-    Mat erosion;
-    Mat element = getStructuringElement( MORPH_ELLIPSE, cv::Size(1,1), cv::Point(0, 0) );
-    erode(image, image, element);
-    
-    // frame filtering
-    cvtColor(image, image, COLOR_BGRA2GRAY);
-    GaussianBlur(image, image, cv::Size(21,21), 1.5, 1.5);
-    Canny(image, image, 20,30, 3, true);
-
-    
-    // Apply the dilation operation
-    Mat dilation;
-    element = getStructuringElement( MORPH_ELLIPSE , cv::Size(1, 1), cv::Point(0, 0) );
-    dilate(image, image, element);
-
-    
-    
-    //get contours
-    vector<vector<cv::Point> > contours;
-    vector<cv::Vec4i> hierarchy;
-    cv::findContours( image, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
-    
-//    // find the contour of the largest area
-//    double area_max=0;
-//    int area_max_idx=0;
-//    for(unsigned i=0; i<contours.size(); i++)
-//        if( contourArea(Mat(contours[i])) > area_max )
-//        {
-//            area_max=contourArea(Mat(contours[i]));
-//            area_max_idx=i;
-//        }
-    
-    vector<vector<cv::Point> > rootContours;
-    cv::Mat newImage = cv::Mat::zeros(480, 640, CV_8UC3);
-    
-    if(contours.size()>0){
-        //        Moments mu;
-        //        mu = moments(contours[area_max_idx]);
-        //Point2f centerOfMass0 = Point2f(image.cols/2, image.rows/2);
-        //Point2f centerOfMass0 = Point2f(mu.m10/mu.m00, mu.m01/mu.m00); //centerOfMass of biggest contour
-        //vector<int> color = getDominantHSVColor(matFromContours(contours));
-        //NSLog(@"hue is %i",color[0]);
-        
-        
-        for (int i = 0; i<hierarchy.size(); i++) {
-            if(hierarchy[i][3] == -1)
-            {
-                Point2f centerOfMass0 = Point2f(center.x, center.y);
-                Moments mu;
-                mu = moments(contours[i]);
-                //double area = contourArea(contours[i]);
-                Point2f centerOfMass = Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
-                double dist = AGObjectDetect::euclideanDist(centerOfMass, centerOfMass0);
-                if( dist< distance)
-                    //if(( pointPolygonTest(contours[i], centerOfMass, true)< 200)&&pointPolygonTest(contours[i], centerOfMass, true)>0)
-                    rootContours.push_back(contours[i]);
-            }
-        }
-    }
-
-    //NSLog(@"contour size is %lu",rootContours.size());
-    return rootContours;
-    //return contours;
-    
-}
-
-Mat AGObjectDetect::matFromContours(vector<vector<cv::Point> > contours){
-    
-    Mat image = Mat::zeros(480,640,CV_8UC3);
+    cv::Mat image = cv::Mat::zeros(480,640,CV_8UC3);
     
     for(unsigned i=0; i<contours.size(); i++){
-        drawContours(image, contours, i, Scalar(0,255,255), 1, 8);
+        drawContours(image, contours, i, cv::Scalar(0,255,255), 1, 8);
     }
     
-    cv::cvtColor(image, image, COLOR_BGR2BGRA);
+    cv::cvtColor(image, image, cv::COLOR_BGR2BGRA);
     return image;
     
 }
 
-double AGObjectDetect::compare(vector<vector<cv::Point> > contourSample,vector<vector<cv::Point> > contourImage){
+double AGObjectDetect::compare(std::vector<std::vector<cv::Point> > contourSample,std::vector<std::vector<cv::Point> > contourImage){
     
-    vector<cv::Point> contour1,contour2;
+    std::vector<cv::Point> contour1,contour2;
     
     if((contourSample.size()>0)&&(contourImage.size()>0)){
         
@@ -276,33 +288,35 @@ double AGObjectDetect::compare(vector<vector<cv::Point> > contourSample,vector<v
     }
     double matchRate = 100;
     
-//    if((contour1.size()>0)&&(contour2.size()>0))
-//        matchRate = matchShapes(contour1,contour2, cv::CV_CONTOURS_MATCH_I1, 0);
+    
+    // TODO uncomment for comparison
+    if((contour1.size()>0)&&(contour2.size()>0))
+        matchRate = matchShapes(contour1,contour2, 1, 0); //method = CV_CONTOUR_MATCH_I1
     return matchRate;
 }
 
-objectDef AGObjectDetect::objectDetection(cv::Mat image, vector<vector<cv::Point> > contourImage,double result, double threshold){
+objectDef AGObjectDetect::objectDetection(cv::Mat image, std::vector<std::vector<cv::Point> > contourImage,double result, double threshold){
     
     objectDef newObject;
     bool match = false;
     cv::Mat dst = cv::Mat::zeros(image.size(), image.type());
         
-    vector<vector<cv::Point> > bufferTemp;
-    vector<vector<cv::Point> > bufferSource;
+    std::vector<std::vector<cv::Point> > bufferTemp;
+    std::vector<std::vector<cv::Point> > bufferSource;
     
     if(buffer.size()>0){
         
             bufferSource = buffer[buffer.size()-1];
         
-        Point2f centerOfMassOfContourTotal= Point2f(dst.cols/2, dst.rows/2);
+        cv::Point2f centerOfMassOfContourTotal= cv::Point2f(dst.cols/2, dst.rows/2);
         
         for(int a=0;a<contourImage.size();a++){
 //            
-            Moments mu;
+            cv::Moments mu;
             mu = moments(contourImage[a]);
-            Point2f centerOfMassOfContour;
+            cv::Point2f centerOfMassOfContour;
             if(mu.m00>0)
-                centerOfMassOfContour = Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
+                centerOfMassOfContour = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
             else
                 centerOfMassOfContour = centerOfMassOfContourTotal;
            
@@ -321,18 +335,18 @@ objectDef AGObjectDetect::objectDetection(cv::Mat image, vector<vector<cv::Point
             buffer.push_back(bufferTemp);
         }
         
-        vector<vector<cv::Point> > hullContour;
-        vector<cv::Point> objectPoints;
+        std::vector<std::vector<cv::Point> > hullContour;
+        std::vector<cv::Point> objectPoints;
         
         //draw all the buffered and current contours
         for(int j=0;j<buffer.size();j++){
             int currentBufferSize = (int)buffer[j].size();
             for(int i=0;i<currentBufferSize;i++){
                 
-                vector<int> hull;
-                vector<cv::Point> hullPoints;
+                std::vector<int> hull;
+                std::vector<cv::Point> hullPoints;
                 
-                convexHull(Mat(buffer[j][i]), hull);
+                convexHull(cv::Mat(buffer[j][i]), hull);
                 int hullcount = (int)hull.size();
                 cv::Point pt0 = buffer[j][i][hull[hullcount-1]];
                 hullPoints.push_back(pt0);
@@ -348,14 +362,14 @@ objectDef AGObjectDetect::objectDetection(cv::Mat image, vector<vector<cv::Point
                 //draw Hull curves
                 //cv::drawContours( dst, hullContour, i, cvScalar(255,255,255), CV_FILLED,8);
                 //draw contour curves
-                cv::drawContours( dst, buffer[j], i, Scalar(255,0,0), 1,8);
+                cv::drawContours( dst, buffer[j], i, cv::Scalar(255,0,0), 1,8);
                 
             }
         }
         
-        vector<int> hull;
-        convexHull(Mat(objectPoints), hull);
-        vector<cv::Point> hullPoints;
+        std::vector<int> hull;
+        convexHull(cv::Mat(objectPoints), hull);
+        std::vector<cv::Point> hullPoints;
         int hullcount = (int)hull.size();
         if(hullcount>0){
             cv::Point pt0 = objectPoints[hull[hullcount-1]];
@@ -369,17 +383,17 @@ objectDef AGObjectDetect::objectDetection(cv::Mat image, vector<vector<cv::Point
             
             if(result<threshold){
                 if(matchCounter>1){
-                    fillConvexPoly(dst, hullPoints, Scalar(0,255,0));
+                    fillConvexPoly(dst, hullPoints, cv::Scalar(0,255,0));
                     matchCounter++;
                     match = true;
                 }else {
-                    fillConvexPoly(dst, hullPoints, Scalar(0,0,255));
+                    fillConvexPoly(dst, hullPoints, cv::Scalar(0,0,255));
                     matchCounter++;
                     match = false;
                 }
                 
             }else{
-                fillConvexPoly(dst, hullPoints, Scalar(0,0,255));
+                fillConvexPoly(dst, hullPoints, cv::Scalar(0,0,255));
                 matchCounter = 0;
                 match = false;
                 
@@ -405,7 +419,7 @@ objectDef AGObjectDetect::objectDetection(cv::Mat image, vector<vector<cv::Point
 
 /*** FUNCTION -> distance (Euclidean) between these two points ***/
 
-void AGObjectDetect::convertVectorToPoint(vector<Point2f>& input, vector<cv::Point>& output)
+void AGObjectDetect::convertVectorToPoint(std::vector<cv::Point2f>& input, std::vector<cv::Point>& output)
 {
     output.clear();
     

@@ -10,7 +10,6 @@
 #import "AGObjectDetect.h"
 #import "AG_Quantize.h"
 
-#import "EmObjectDetect.h"
 
 
 #define kTransitionDuration	0.75
@@ -41,7 +40,7 @@
     sliderValue = 1.5;
     matchCounter = 0;
 
-    UIImage *sampleUIImage = [UIImage imageNamed:@"circle.png"];
+    UIImage *sampleUIImage = [UIImage imageNamed:@"circle01.jpg"];
     sampleImage = [sampleUIImage toMat];
     
     contour_unique_load = AGObjectDetect::getSampleFromImage(sampleImage);
@@ -191,9 +190,6 @@
             if(mode==MODE_OBJECT_DETECTION){
                 contour_unique_load = AGObjectDetect::getSampleFromImage(sampleImage);
                 contourImage = AGObjectDetect::matFromContours(contour_unique_load);
-            }else{
-                contour_unique_load = emObject.image_load_elaboration(sampleImage);
-                contourImage = emObject.matFromContours(contour_unique_load);
             }
             contourImageView.image = [UIImage imageWithMat:contourImage andImageOrientation:UIImageOrientationUp];
             sampleImageView.image = [UIImage imageWithMat:sampleImage andImageOrientation:UIImageOrientationUp];
@@ -203,9 +199,6 @@
             if(mode==MODE_OBJECT_DETECTION){
                 contour_unique_load = AGObjectDetect::getSampleFromImage(sampleImage);
                 contourImage = AGObjectDetect::matFromContours(contour_unique_load);
-            }else{
-                contour_unique_load = emObject.image_load_elaboration(sampleImage);
-                contourImage = emObject.matFromContours(contour_unique_load);
             }
             contourImageView.image = [UIImage imageWithMat:contourImage andImageOrientation:UIImageOrientationUp];
             sampleImageView.image = [UIImage imageWithMat:sampleImage andImageOrientation:UIImageOrientationUp];
@@ -251,14 +244,10 @@
     if (isMainQueue)
     {
        
-        if(mode == MODE_EM){
-            
-        outputFrame = emObject.camera_acquisition_elaboration(frame, contour_unique_load,MODE_EM);
-         
-        }else if(mode == MODE_OBJECT_DETECTION)
+        if(mode == MODE_OBJECT_DETECTION)
             {
                 
-                vector<vector<cv::Point>> contourFrame;
+                std::vector<std::vector<cv::Point>> contourFrame;
                 contourFrame = AGObjectDetect::getContoursFromImage(frame,cv::Point(320,240),75);
                 result = AGObjectDetect::compare(contour_unique_load,contourFrame);
                 newObject = AGObjectDetect::objectDetection(frame,contourFrame,result,AG_MATCH_THRESHOLD_DEFAULT);
@@ -279,12 +268,9 @@
     else
     {
         dispatch_sync( dispatch_get_main_queue(),
-                      ^{ if(mode == MODE_EM){
-            outputFrame = emObject.camera_acquisition_elaboration(frame, contour_unique_load,MODE_EM);
-            
-        }else if(mode == MODE_OBJECT_DETECTION)
+                      ^{ if(mode == MODE_OBJECT_DETECTION)
         {
-            vector<vector<cv::Point>> contourFrame;
+            std::vector<std::vector<cv::Point>> contourFrame;
             contourFrame = AGObjectDetect::getContoursFromImage(frame,cv::Point(320,240),75);
             result = AGObjectDetect::compare(contour_unique_load,contourFrame);
             newObject = AGObjectDetect::objectDetection(frame,contourFrame,result,AG_MATCH_THRESHOLD_DEFAULT);
